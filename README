@@ -1,5 +1,8 @@
 = Various tools
 
+gcalc       Google Calculator client
+goog        Google Search client
 outline.rb  tools for parsing orgstruct++-outlines
+twicl       Twitter client
 wmdesk      display the currently active desktop
 wmtitle     display the title of the currently active window
