@@ -1,5 +1,6 @@
 = Various tools
 
+gbo2rss.rb  RSS feed scaper for german-bash.org
 gcalc       Google Calculator client
 goog        Google Search client
 outline.rb  tools for parsing orgstruct++-outlines
