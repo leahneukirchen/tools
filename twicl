@@ -1,0 +1,116 @@
+#!/usr/bin/env ruby
+# -*- ruby -*-
+
+# twitter command line client
+# That's What I Call Lame
+
+require 'json'
+require 'open-uri'
+require 'pp'
+require 'time'
+
+begin
+  load "~/.twicl"
+rescue LoadError
+  abort <<ERR
+No ~/.twicl found, please create one with these contents:
+
+  $auth = ["your twitter username", "your twitter password"]
+
+ERR
+end
+
+STDOUT.sync = true
+Thread.abort_on_exception = true
+
+def fetch(url, last_id, auth, &block)
+  url += "?since_id=#{last_id}"  if last_id
+  begin
+    posts = JSON.load(open(url, :http_basic_authentication => auth))
+  rescue => e
+    if e.message =~ /400 Bad Request/
+      abort ">> API limit reached.  Exiting, try again next hour..."
+    else
+      puts "!> #{e.message}"
+      return last_id
+    end
+  rescue Timeout::Error
+    # ignore
+  end
+
+  # On startup, get at most posts of last three days.
+  unless last_id
+    posts.reject! { |post|
+      Time.now - Time.parse(post["created_at"]) > 3*24*60*60
+    }
+  end
+  
+  posts.reverse_each { |post|
+    post["stamp"] = Time.parse(post["created_at"]).strftime("%m/%d %H:%M")
+    yield post
+  }
+  
+  return posts.map { |post| post["id"] }.max || last_id
+end
+
+def update_friends
+  $last_friends = fetch("http://twitter.com/statuses/friends_timeline.json",
+                        $last_friends, $auth) { |post|
+    puts "\r%s %s: %s" % [post["stamp"],
+                          post["user"]["screen_name"],
+                          post["text"]]
+  }
+end
+
+def update_replies
+  $last_replies = fetch("http://twitter.com/statuses/replies.json",
+                        $last_replies, $auth) { |post|
+    puts "\r%s >> %s: %s" % [post["stamp"],
+                             post["user"]["screen_name"],
+                             post["text"]]
+  }
+end
+
+def update_direct
+  $last_direct = fetch("http://twitter.com/direct_messages.json",
+                       $last_direct, $auth) { |post|
+    puts "\r%s <> %s: %s" % [post["stamp"],
+                             post["sender"]["screen_name"],
+                             post["text"]]
+  } 
+end
+
+def post(string, auth)
+  res = Net::HTTP.post_form(
+    URI.parse("http://#{auth * ":"}@twitter.com/statuses/update.json"),
+    "status" => string)
+  JSON.parse(res.body)["id"]
+end
+
+Thread.new {
+  loop {
+    update_friends; update_replies; update_direct
+    sleep 120
+  }
+}
+
+Thread.new {
+  loop {
+    print "\r> "
+    line = gets
+    exit  if line.nil?
+
+    line.chomp!
+
+    unless line.strip.empty?
+      if line.size > 140
+        puts "!> Line to long, #{line[140..-1].dump} would be clipped."
+      else
+        post line, $auth
+        sleep 1                   # ensure it will show up on next fetch
+      end
+    end
+    
+    update_friends; update_replies; update_direct
+  }
+}.join
