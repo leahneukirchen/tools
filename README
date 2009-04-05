@@ -6,3 +6,4 @@ outline.rb  tools for parsing orgstruct++-outlines
 twicl       Twitter client
 wmdesk      display the currently active desktop
 wmtitle     display the title of the currently active window
+zdit        ZSH interactive line editor

@@ -1,0 +1,39 @@
+#!/usr/bin/env zsh
+# zdit - a simple non-screen-clearing editor
+# Usage: zdit [FILE]
+#   A single . on a line or C-x C-s save.
+#   Use C-c or C-d on empty buffer to abort editing.
+#   If FILE is -, read buffer from STDIN.  If FILE is - or not passed,
+#   output buffer on save.
+#
+# 30jan2009 +chris+
+
+function accept-on-dot() {
+  if [[ $BUFFER[-2,-1] == $'\n.' && $CURSOR == $#BUFFER ]] then
+    BUFFER=$BUFFER[0,-3]
+    zle accept-line
+  else
+    zle self-insert-unmeta
+  fi
+}
+zle -N accept-on-dot accept-on-dot
+
+bindkey -N zdit emacs
+bindkey -M zdit "^J" accept-on-dot
+bindkey -M zdit "^M" accept-on-dot
+bindkey -M zdit "^D" delete-char
+stty -ixon 2>/dev/null
+bindkey -M zdit "^X^S" accept-line
+
+if [[ -z "$1" ]] then
+  text=''
+else
+  text=$(cat $1)
+fi
+
+vared -M zdit -r $1 -e text &&
+if [[ -z $1 || $1 == "-" ]] then
+  echo -E $text
+else
+  { [[ -f $1 ]] && mv $1 "$1~" || true } && echo -E $text >$1
+fi
