@@ -4,7 +4,7 @@ require 'open-uri'
 n = ARGV[0] =~ /^\d+$/ ? ARGV.shift : 5
 q = ARGV.join(" ").gsub(/./m) { "%%%02X" % $&[0] }
 open("http://www.google.com/search?ie=utf-8&oe=utf-8&q=#{q}&num=#{n}").read.
-scan(%r{<h3 class=r><a href="(.*?)" class=l>(.*?)</a>}) { |url, desc|
+scan(%r{<h3 class=r><a href="([^"]*?)" class=l>(.*?)</a>}) { |url, desc|
   puts url
   puts "  " + desc[0..70].gsub(%r{</?em>}, '')  unless $q
 }
