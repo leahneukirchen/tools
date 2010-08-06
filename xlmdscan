@@ -1,0 +1,4 @@
+#!/bin/sh
+# xlmdscan - xlbiff script to output summary of maildirs
+
+ls ~/Mail/*/*/*2, | grep -v "Sent Mail" | xargs -i scan -file '{}' -width $(expr $2 + 7) -form scan.timely | cut -b7-

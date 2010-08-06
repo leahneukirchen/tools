@@ -1,0 +1,11 @@
+#!/usr/bin/ruby
+# xscreensaver-ssh-helper - forget SSH agent keys on blanking
+
+IO.popen("xscreensaver-command -watch") { |io|
+  while line = io.gets
+    case line
+    when /^BLANK|^LOCK/
+      system "ssh-add -D"
+    end
+  end
+}

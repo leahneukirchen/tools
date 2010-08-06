@@ -1,0 +1,13 @@
+#!/bin/sh
+# xlmdcheck - xlbiff script to check maildirs
+
+HASH=$(ls ~/Mail/*/*/*2, | grep -v "Sent Mail" | cksum | cut -b1-9)
+echo $HASH
+if [ $2 -ne $HASH ]; then
+  if [ $HASH -eq 429496729 ]; then  # empty output
+    exit 2
+  else
+    exit 0
+  fi
+fi
+exit 1

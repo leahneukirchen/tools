@@ -2,7 +2,7 @@
 require 'cgi'
 require 'time'
 
-page = `/opt/local/bin/w3m -dump http://german-bash.org/action/latest`
+page = `w3m -dump http://german-bash.org/action/latest`
 
 page.sub!(/.*?(#\d)/m, '\1')
 page.gsub!(/\*\Z/, '')

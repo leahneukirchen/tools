@@ -1,0 +1,4 @@
+#!/bin/sh
+# clip2goog - google for selected text
+
+firefox "http://google.com/search?q=$(xclip -out)"

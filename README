@@ -1,10 +1,23 @@
 = Various tools
 
+cclock      digital clock
+clip2firefox  open selected text as firefox address
+clip2goog   google for selected text
+colortheme  display terminal colors
+curtab      print the currently selected Firefox tab
 gbo2rss.rb  RSS feed scaper for german-bash.org
 gcalc       Google Calculator client
 goog        Google Search client
+iconify     twm-style iconification, replace the current window with a button
+imgur       post image to imgur.com
 outline.rb  tools for parsing orgstruct++-outlines
+pastie      paste to pastie.org
+sel         raise and focus a window by name
+tmux-compress  renumber tmux windows in sequence
 twicl       Twitter client
 wmdesk      display the currently active desktop
 wmtitle     display the title of the currently active window
+xlmdcheck   xlbiff script to check maildirs
+xlmdscan    xlbiff script to output summary of maildirs
+xscreensaver-ssh-helper  forget SSH agent keys on blanking
 zdit        ZSH interactive line editor

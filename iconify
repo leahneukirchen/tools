@@ -1,0 +1,28 @@
+#!/usr/bin/wish
+# iconify - twm-style iconification, replace the current window with a button
+proc every {ms body} {eval $body; after $ms [info level 0]}
+
+set ::window [exec xdotool getwindowfocus]
+exec xdotool windowunmap $window
+
+puts $window
+
+proc update_title {} {
+  catch {exec xprop -id $::window WM_NAME WM_ICON_NAME} result options
+
+  if {[dict get $options -code]} {
+    exit
+  } {
+    set ::title [regsub {.*"(.*)".*} $result {\1}]
+  }
+}
+update_title
+
+button .b -relief flat -padx 2 -pady 2 -textvariable ::title -command {
+  exec xdotool windowmap $window
+  exit
+}
+
+pack .b
+
+every 1000 update_title

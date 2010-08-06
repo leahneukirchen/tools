@@ -1,0 +1,12 @@
+#!/usr/bin/wish
+# cclock - a simple digital clock that locks screen when you click on it
+proc every {ms body} {eval $body; after $ms [info level 0]}
+
+label .digital -textvar ::time -font {Helvetica 8}
+bind .digital <1> {exec xscreensaver-command --lock 2>&1 >/dev/null}
+pack .digital
+
+every 1000 {
+  set ::time [string tolower \
+               [clock format [clock sec] -format "%d%b%Y\n%H:%M:%S"]]
+}

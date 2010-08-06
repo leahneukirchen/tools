@@ -1,0 +1,14 @@
+#!/bin/sh
+# pastie FILES... - paste to pastie.org
+
+[ -z $1 ] && exec $0 /dev/stdin
+
+for f in "$@"; do
+  echo "## $f"
+  cat $f
+done |
+curl http://pastie.caboo.se/pastes/create -H 'Expect:' \
+  -F 'paste[parser]=plaintext' -F "paste[body]=<-" \
+  -F 'paste[authorization]=burger' -s -L -o /dev/null -w '%{url_effective}'
+
+echo

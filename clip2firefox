@@ -1,0 +1,3 @@
+#!/bin/sh
+# clip2firefox - open selected text as firefox address
+firefox "$(xclip -out)"
