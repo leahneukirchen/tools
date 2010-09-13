@@ -25,6 +25,11 @@ Thread.abort_on_exception = true
 
 def fetch(url, last_id, auth, &block)
   url += "?since_id=#{last_id}"  if last_id
+  if url.index "?"
+    url += "&source=twitterandroid"
+  else
+    url += "?source=twitterandroid"
+  end
   begin
     posts = JSON.load(open(url, :http_basic_authentication => auth))
   rescue => e
@@ -83,7 +88,7 @@ end
 def post(string, auth)
   res = Net::HTTP.post_form(
     URI.parse("http://#{auth * ":"}@twitter.com/statuses/update.json"),
-    "status" => string)
+    "status" => string, "source" => "twitterandroid")
   JSON.parse(res.body)["id"]
 end
 
