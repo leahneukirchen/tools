@@ -1,4 +1,11 @@
-#!/bin/sh
+#!/bin/zsh
 # clip2goog - google for selected text
 
-firefox "http://google.com/search?q=$(xclip -out)"
+selurl() {
+  setopt localoptions extendedglob
+  sel=$(xclip -out)
+  input=( ${(s::)sel} )
+  print ${(j::)input/(#b)([^A-Za-z0-9_.!~*\'\(\)-])/%$(([##16]#match))}
+}
+
+firefox "http://google.com/search?q=$(selurl)"
