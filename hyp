@@ -1,0 +1,11 @@
+#!/bin/sh
+# hyp - look up hyphenation on wiktionary
+
+case "$1" in
+-??) lang=$1; shift;;
+esac
+
+for word; do
+  curl -s http://${lang:-de}.wiktionary.org/wiki/$word | grep -Po '[^\s>]+·[^\s,<]+' | head -1 | sed 's/·/\\-/g'
+done
+

@@ -1,0 +1,78 @@
+#!/usr/bin/env ruby -s
+# randrmove [-rp] [CRTC...] - cycle windows between xrandr "screens"
+# By default, cycle left-to-right.
+#   -r to reverse the order
+#   -p to try to keep proportions screen layout
+# Needs xrandr, xdotool, xwininfo.
+
+# TODO: 
+# * fix negative offsets
+# * resize windows?
+# * base proportions on smallest distance to margin
+
+cycle = ARGV
+
+screens = {}
+
+minfo = `xdotool getmouselocation`
+mx = minfo[/x:(\d+)/, 1].to_i
+my = minfo[/y:(\d+)/, 1].to_i
+
+`xrandr --current`.each_line { |line|
+  fields = line.split
+  if fields[1] == "connected"
+    screens[fields[0]] = fields[2].split(/[x+]/).map { |n| n.to_i }
+  end
+}
+
+if cycle.empty?
+  cycle = screens.sort_by { |_, (_, _, sx, sy)| [sx,sy] }.map { |s, _| s }
+end
+
+cycle.reverse!  if $r
+
+abort "unknown screens: #{cycle-screens.keys}"  unless (cycle-screens.keys).empty?
+
+`xdotool search --name --onlyvisible .`.each_line { |windowid|
+  windowid.chomp!
+  winfo = `xwininfo -id #{windowid}`
+
+  info = []
+  ["Absolute upper-left X", "Absolute upper-left Y", "Width", "Depth"].each { |f|
+    info << winfo[/#{f}: *(\d+)/, 1].to_i
+  }
+  
+  x, y, w, h = *info
+  
+  # find screen where window occupies most space
+  screen = screens.sort_by { |_, (sw, sh, sx, sy)|
+    [0, [sx+sw, x+w].min - [sx, x].max].max *
+    [0, [sy+sh, y+h].min - [sy, y].max].max
+  }.first.first
+  
+  target = cycle[(cycle.index(screen)+1) % cycle.size]  rescue screen
+
+  next  if screen == target
+
+  sw,sh,sx,sy = screens[screen]
+  tw,th,tx,ty = screens[target]
+
+  if $p
+    #  *(sw.to_f/tw)).to_i
+    puts "windowmove #{windowid} #{(sx+(x-tx)*(sw.to_f/tw)).to_i} #{(sy+(y-ty)*(sw.to_f/tw)).to_i}  # #{sx-tx} #{sy-ty}"
+  else
+    puts "windowmove #{windowid} #{x+sx-tx} #{y+sy-ty}  # #{sx-tx} #{sy-ty}"
+  end
+}
+
+mscreen = screens.sort_by { |_, (sw, sh, sx, sy)|
+  [0, [sx+sw, mx+1].min - [sx, mx].max].max *
+  [0, [sy+sh, my+1].min - [sy, my].max].max
+}.first.first
+
+mtarget = cycle[(cycle.index(mscreen)+1) % cycle.size]  rescue exit
+  
+_,_,sx,sy = screens[mscreen]
+_,_,tx,ty = screens[mtarget]
+
+puts "mousemove #{mx+sx-tx} #{my+sy-ty}  # #{sx-tx} #{sy-ty}"
