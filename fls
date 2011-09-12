@@ -17,14 +17,32 @@ sort = "N"
 fmt = "%p%_%l%_%u%_%g%_%h%_%m%_%n"  # roghly, ls -lha
 maxdepth = nil
 exclude = []
-opt_parser = OptionParser.new("", 24, '  ') do |opts|
+opt_parser = OptionParser.new("", 20, '  ') do |opts|
   opts.banner = "Usage: fls [-x GLOB] [-f FMT] DIR..."
   
-  opts.on("-f FMT", "output format") { |f| fmt = f }
-  opts.on("-m DEPTH", "max depth") { |m| maxdepth = Integer(m) }
-  opts.on("-s SORT", "sort order") { |s| sort = s }
+  opts.on("-f FMT", "output format",
+"  %n filename      %N raw filename",  
+"  %b basename      %B raw basename",
+"  %u user   %U uid          %g group   %G gid",
+"  %s size   %h human size   %F indicator (*/=|)",
+"  %p modestring    %P octal mode",
+"  %i inode number  %l number of hardlinks",
+"  %e extension     %E name without extension",
+"  %a iso atime     %A epoch atime",
+"  %m iso mtime     %M epoch mtime",
+"  %c iso ctime     %C epoch ctime",
+"  %_ column alignment"
+) { |f| fmt = f }
+  opts.on("-s SORTKEY...", "sort order (prepend - to reverse order)",
+"  n filename   b basename  s size",
+"  u user   U uid   g group   G gid",
+"  i inode number  l number of hardlinks",
+"  e extension   E name without extension",
+"  a atime   m mtime   c ctime"
+) { |s| sort = s }
+  opts.on("-m DEPTH", "max depth (number of / in pathname allowed)") { |m| maxdepth = Integer(m) }
   opts.on("-x EXCLUDE", "exclude GLOB (** for recursive *)") { |x| exclude << x }
-  opts.on_tail("--help", "Show this message") do
+  opts.on_tail("-h","--help", "Show this message") do
     puts opts
     exit
   end
