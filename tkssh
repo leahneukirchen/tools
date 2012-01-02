@@ -1,0 +1,51 @@
+#!/usr/bin/wish
+# tkssh - simple ssh menu
+#
+# usage: tkssh HOSTS...
+
+# entry .t -textvariable input -borderwidth 0
+ttk::combobox .t -textvariable input -values $argv
+
+proc run {} {
+  global input
+  switch -regexp -matchvar m -- $input {
+    "^([a-z0-9.@]*)$" { exec urxvt -e ssh [lindex $m 1] & }
+    "^(-.*)$"  { exec urxvt -e ssh [lindex $m 1] & }
+    "^s (.*)$" { exec urxvt -e ssh [lindex $m 1] & }
+    "^r (.*)$" { exec urxvt -name root -e ssh root@[lindex $m 1] & }
+  }
+
+  # Add host if not in list.
+  set values [.t cget -values]
+  if {[lsearch $values $input] < 0} {
+    .t configure -values "$input $values"
+  }
+
+  set input ""
+}
+
+bind .t <Return> run
+bind .t <<ComboboxSelected>> run
+bind .t <Control-u> { set input "" }
+
+
+# autocomplete, c.f. http://wiki.tcl.tk/15780
+proc ComboBoxAutoComplete {path key} {
+  if {[string length $key] > 1 && [string tolower $key] != $key} {return}
+  set text [string map [list {[} {\[} {]} {\]}] [$path get]]
+  if {[string equal $text ""]} {return}
+
+  set values [$path cget -values]
+  set x [lsearch $values $text*]
+  if {$x < 0} {return}
+
+  set index [$path index insert]
+  $path set [lindex $values $x]
+  $path icursor $index
+  $path selection range insert end
+}
+bind .t <KeyRelease> [list ComboBoxAutoComplete .t %K]
+
+
+focus .t
+pack .t -expand 1 -fill both

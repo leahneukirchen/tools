@@ -1,0 +1,17 @@
+#!/bin/sh
+# 9icon - show 9menu of iconified windows for unmapping
+
+IFS="
+"
+
+for win in $(xwininfo -root -children | awk '$1~/0x/ && $2~/"/ {print $1}'); do
+  xprop -id $win WM_NAME WM_STATE |
+  awk -F'"' -v win=$win '
+    /^WM_NAME/ { name=$2 }
+    /window state: Iconic/ {
+      gsub(":", ";", name)  # cannot escape ":" to seperate title and cmd
+      print name ":xdotool windowmap " win " windowraise " win
+    }
+  '
+done | xargs -r -d'\n' \
+  9menu -popup -label 9icon -bg grey20 -fg grey80 -font fixed

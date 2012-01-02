@@ -1,0 +1,47 @@
+#!/usr/bin/ruby
+# rmix - minimalist volume control
+# use -h to run horizontal
+require "tk"
+
+$mixer = File.open("/dev/mixer", "w+")
+
+# Ruby 1.9 needs signed ints here.
+SOUND_MIXER_READ_PCM  = 0x80044d04 - 2**32
+SOUND_MIXER_WRITE_PCM = 0xc0044d04 - 2**32
+SOUND_MIXER_READ_VOLUME = 0x80044d00 - 2**32
+SOUND_MIXER_WRITE_VOLUME = 0xc0044d00 - 2**32
+
+def getvol
+  vol = [0].pack("i")
+  $mixer.ioctl(SOUND_MIXER_READ_VOLUME, vol)
+  vol = vol.unpack("i")[0]
+  [vol%256, vol/256]
+end
+
+def setvol(left, right)
+  vol = [left + right*256].pack("i")
+  $mixer.ioctl(SOUND_MIXER_WRITE_VOLUME, vol)
+end
+
+root = TkRoot.new {
+  geometry ARGV.join(' ')[/-g(?:eometry)?\s*([0-9x+-]*)/, 1]
+}
+
+scroll = TkScale.new(root) {
+  showvalue false
+  command lambda { |vol| setvol(vol, vol) }
+  set getvol.first
+  if ARGV.include? "-h"
+    orient 'horizontal'
+  else
+    from 100
+    to 0
+  end
+  pack('fill' => 'both', 'expand' => 1)
+}
+scroll.bind('<MouseWheel>') { |ev| p ev }
+
+TkAfter.new(delay=100, loop=-1) { scroll.set getvol.first }.start
+
+Tk.mainloop
+

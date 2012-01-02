@@ -1,0 +1,24 @@
+#!/bin/sh
+# mvv - quick search for Münchner Verkehrs- und Tarifverbund
+
+# Usage: mvv [HOUR:MINUTE] FROM TO
+
+TIME=
+case $1 in
+    *:*)
+    TIME="--data-url itdTimeHour=${1%:*} --data-url itdTimeMinute=${1#*:}"
+    shift;;
+esac
+
+FROM=$(echo "${1:-Rotkreuzplatz}" |iconv -f utf-8 -t latin1)
+TO=$(echo "${2:-Pinakotheken}" |iconv -f utf-8 -t latin1)
+
+curl -s0 'http://efa.mvv-muenchen.de/mobile/XSLT_TRIP_REQUEST2' \
+     --data-url name_origin="$FROM" --data-url name_destination="$TO" \
+     --data "type_origin=any&type_destination=any&itdTripDateTimeDepArr=dep" \
+     $TIME | 
+w3m -dump -T text/html |
+awk '/^Von:|^Nach:/ { sub("\xc2\xa0 ", "\t"); print };
+     / - /    {printf("%s-%s ", $(NF-3), $(NF-1))}
+     /^Dauer:/ {printf("%s", $2)}
+     /Bus|Tram|Bahn/ {print "  " $0}'
