@@ -73,15 +73,15 @@ def sortkey(fmt, file)
   stat = File.lstat(file)
   fmt.scan(/(-?)(.)/).map { |r, f|
     key = case f
-    when "N", "n": file
-    when "u":      Etc.getpwuid(stat.uid).name
-    when "U":      "%d" % stat.uid
-    when "g":      Etc.getgrgid(stat.gid).name
-    when "G":      "%d" % stat.gid
-    when "s", "h": stat.size
-    when "i":      stat.ino
-    when "p", "P": stat.mode
-    when "l":      stat.nlink
+    when "N", "n"; file
+    when "u";      Etc.getpwuid(stat.uid).name
+    when "U";      "%d" % stat.uid
+    when "g";      Etc.getgrgid(stat.gid).name
+    when "G";      "%d" % stat.gid
+    when "s", "h"; stat.size
+    when "i";      stat.ino
+    when "p", "P"; stat.mode
+    when "l";      stat.nlink
     when "B", "b"; esc(File.basename(file))
     when "a", "A"; stat.atime
     when "c", "C"; stat.ctime
@@ -139,18 +139,18 @@ def format(fmt, file)
   fmt.gsub(/%(-?)(.)/){
     r, f = $1, $2
     case f
-    when "u":      Etc.getpwuid(stat.uid).name
-    when "U":      "%d" % stat.uid
-    when "g":      Etc.getgrgid(stat.gid).name
-    when "G":      "%d" % stat.gid
-    when "s":      "%d" % stat.size
-    when "h":      human(stat.size)
-    when "i":      stat.ino
-    when "p":      modestring(stat.mode)
-    when "P":      "%06o" % stat.mode
+    when "u";      Etc.getpwuid(stat.uid).name
+    when "U";      "%d" % stat.uid
+    when "g";      Etc.getgrgid(stat.gid).name
+    when "G";      "%d" % stat.gid
+    when "s";      "%d" % stat.size
+    when "h";      human(stat.size)
+    when "i";      stat.ino
+    when "p";      modestring(stat.mode)
+    when "P";      "%06o" % stat.mode
     when "n";      esc(file)
     when "N";      file
-    when "l":      stat.nlink
+    when "l";      stat.nlink
     when "F";      if stat.symlink?; ""
                    elsif stat.directory?; "/"
                    elsif stat.executable?; "*"
