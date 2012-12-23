@@ -1,9 +1,9 @@
-#!/usr/bin/ruby -Ku
+#!/usr/bin/ruby
 # gcalc - command-line interface for Google calculator
-# 26aug2008 chneukirchen / revised 06aug2010 / public domain
+# 26aug2008 chneukirchen / revised 06aug2010, 23dec2012 / public domain
 require 'open-uri'
 q = ARGV.join(" ").gsub(/./m) { "%%%02X" % $&.unpack("C").first }
 html = open("http://www.google.com/search?q=#{q}").read
-puts (html[%r{<h2[^>]*><b>(.*?)</b></h2>}, 1] || 'not a calculation').
-gsub(%r{<font size=-2> </font>}, "").gsub("×", "x").
-gsub(%r{<sup>(.*?)</sup>}, '^\\1 ')
+puts (html[%r{<h2 class="r".*?>(.*?)</h2>}, 1] || 'not a calculation').
+gsub(%r{<sup>(.*?)</sup>}, '^\\1 ').
+gsub(%r{&#215;}, '*')
